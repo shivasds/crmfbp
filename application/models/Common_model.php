@@ -426,7 +426,8 @@
                 $this->db->where('leadid', $where['leadid']);
                 $this->db->update('online_leads');
                  
-                }
-                
             }
+                
+            
         }
+    }

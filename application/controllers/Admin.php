@@ -1939,28 +1939,23 @@ class Admin extends CI_Controller {
 	public function online_leads(){
 		$data['name'] ="more";
 		$data['heading'] ="Online Callbacks";
-	 
+		$leadsdata=$this->magic_brick_api();
+		//print_r($leadsdata)
+		$this->common_model->save_online_leads($leadsdata);
+		$this->load->view('admin/online_leads',$data);    
+	}
+	public function magic_brick_api()
+	{
 	 	$start_date=date("Ymd", strtotime('yesterday'));
 		$end_date =  date("Ymd", strtotime(date("y-m-d")));
-		
-		 			$url="http://rating.magicbricks.com/mbRating/download.xml?key=zAKcH4GGOdsg5K70nqFAUw~~~~~~3D~~~~~~3D&startDate=".$start_date."&endDate=".$end_date."";
-		 			//echo $url;
+		$url="http://rating.magicbricks.com/mbRating/download.xml?key=zAKcH4GGOdsg5K70nqFAUw~~~~~~3D~~~~~~3D&startDate=".$start_date."&endDate=".$end_date."";
 		 			$crl = curl_init($url);
 					curl_setopt ($crl, CURLOPT_POST, 1);
 					curl_setopt ($crl, CURLOPT_POSTFIELDS,3);
 					curl_setopt ($crl, CURLOPT_RETURNTRANSFER,1);
 					$leads=curl_exec ($crl);
 
-					$data['leads'] = simplexml_load_string($leads);
-					$leadsdata=$data['leads'];
-				//	print_r($leadsdata);
-				//	echo "</br></br>".$data['leads']->status."chill";
-				//	echo "</br></br>".$leadsdata->leads->lead->city."chill";
-				 $this->common_model->save_online_leads($leadsdata);
-				 
-		            $this->load->view('admin/online_leads',$data);
-	               
-	    
+					return simplexml_load_string($leads);
 	}
 
 	public function fetch_online_leads(){
@@ -1969,9 +1964,10 @@ class Admin extends CI_Controller {
 		$password = "bphfbp2014";
 		$start_date = date("Y-m-d", strtotime('yesterday'));
 		$end_date = date("Y-m-d");
-		$request = "<?xml version='1.0'?><query><user_name>$username</user_name><pswd>$password</pswd><start_date>$start_date 00:00:00</start_date><end_date>$end_date 00:00:00</end_date></query>";
+		$request = "<?xml version='1.0'?><query><user_name>$username</user_name><pswd>$password</pswd><start_date>$start_date 00:00:00</start_date><end_date>$end_date 23:59:59</end_date></query>";
 		$allParams = array('xml'=>$request);
 		$leads = $this->get99AcresLeads($allParams,$url);
+		print_r($leads);
 		$data = simplexml_load_string($leads);
 
 		$lead_data = array();
@@ -1993,10 +1989,16 @@ class Admin extends CI_Controller {
 					"notes" => $notes,
 					"lead_date" => date("Y-m-d", strtotime('yesterday'))
 				);
+				//print_r($temp);
+
 				$this->common_model->insertRow($temp, 'online_leads');
 			}
 		}
-		echo "Success";
+		else
+		{
+			echo "failed for 99 acres";
+		}
+		//echo "Success";
 	}
 
 	/*public function save_online_leads(){
@@ -2365,6 +2367,8 @@ class Admin extends CI_Controller {
     	echo json_encode($result);
     	exit();
     }
+    
+
     
 
 }
